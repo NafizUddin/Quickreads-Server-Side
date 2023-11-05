@@ -12,7 +12,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["http://localhost:5173"], // Client Side Server
+    origin: ["http://localhost:5173", "https://quickreads-library.netlify.app"], // Client Side Server
     credentials: true,
   })
 );
@@ -61,6 +61,8 @@ async function run() {
       .db("quickReadsDB")
       .collection("categories");
 
+    const usersCollection = client.db("quickReadsDB").collection("users");
+
     // JWT Related API
 
     app.post("/api/auth/access-token", async (req, res) => {
@@ -97,6 +99,18 @@ async function run() {
     app.post("/api/categories", async (req, res) => {
       const newCategory = req.body;
       const result = await categoryCollection.insertOne(newCategory);
+      res.send(result);
+    });
+
+    // User Related API
+    app.get("/api/users", async (req, res) => {
+      const result = await usersCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/api/users", async (req, res) => {
+      const newUser = req.body;
+      const result = await usersCollection.insertOne(newUser);
       res.send(result);
     });
 
