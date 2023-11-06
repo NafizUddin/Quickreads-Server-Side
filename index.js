@@ -70,13 +70,11 @@ async function run() {
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "1h",
       });
-      const expirationDate = new Date();
-      expirationDate.setDate(expirationDate.getDate() + 7);
       res
         .cookie("token", token, {
           httpOnly: true,
-          secure: false,
-          expires: expirationDate,
+          secure: true,
+          sameSite: "none",
         })
         .send({ success: true });
     });
@@ -123,7 +121,6 @@ async function run() {
 
     app.post("/api/books", async (req, res) => {
       const newBooks = req.body;
-      console.log(newBooks);
       const result = await booksCollection.insertOne(newBooks);
       res.send(result);
     });
