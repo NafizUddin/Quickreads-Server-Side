@@ -3,7 +3,7 @@ const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const port = process.env.PORT || 3000;
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const app = express();
 
@@ -119,9 +119,30 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/api/books/:id([0-9a-fA-F]{24})", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await booksCollection.findOne(query);
+      res.send(result);
+    });
+
     app.post("/api/books", async (req, res) => {
       const newBooks = req.body;
       const result = await booksCollection.insertOne(newBooks);
+      res.send(result);
+    });
+
+    app.put("/api/books/:id([0-9a-fA-F]{24})", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedBook = req.body;
+      const options = { upsert: true };
+      const newBook = {
+        $set: {
+          ...updatedBook,
+        },
+      };
+      const result = await booksCollection.updateOne(filter, newBook, options);
       res.send(result);
     });
 
