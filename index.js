@@ -94,6 +94,16 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/api/categories/:category", async (req, res) => {
+      const category = req.params.category;
+      console.log(category);
+      const query = {
+        category: category,
+      };
+      const result = await categoryCollection.findOne(query);
+      res.send(result);
+    });
+
     app.post("/api/categories", async (req, res) => {
       const newCategory = req.body;
       const result = await categoryCollection.insertOne(newCategory);
@@ -119,7 +129,16 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/api/books/:id([0-9a-fA-F]{24})", async (req, res) => {
+    app.get("/api/books/:category", async (req, res) => {
+      const queryCategory = req.params?.category;
+      const query = {
+        bookCategory: queryCategory,
+      };
+      const result = await booksCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.get("/api/books/singleBook/:id([0-9a-fA-F]{24})", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await booksCollection.findOne(query);
