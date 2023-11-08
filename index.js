@@ -126,7 +126,7 @@ async function run() {
 
     // Books Related API
 
-    app.get("/api/books", async (req, res) => {
+    app.get("/api/books", verifyToken, async (req, res) => {
       const queries = {};
       if (req.query.quantity !== "null") {
         queries.quantity = { $gt: parseInt(req.query.quantity) };
@@ -150,7 +150,7 @@ async function run() {
       const query = {
         name: queryName,
       };
-      const result = await booksCollection.find(query).toArray();
+      const result = await booksCollection.findOne(query);
       res.send(result);
     });
 
@@ -167,7 +167,7 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/api/books", async (req, res) => {
+    app.post("/api/books", verifyToken, async (req, res) => {
       const newBooks = req.body;
       const result = await booksCollection.insertOne(newBooks);
       res.send(result);
@@ -187,21 +187,15 @@ async function run() {
       res.send(result);
     });
 
-    app.patch(
-      "/api/books/singleBook/:id([0-9a-fA-F]{24})",
-      async (req, res) => {
-        const id = req.params.id;
-        const filter = { _id: new ObjectId(id) };
-        const updatedBook = req.body;
-        const newBook = {
-          $set: {
-            ...updatedBook,
-          },
-        };
-        const result = await booksCollection.updateOne(filter, newBook);
-        res.send(result);
-      }
-    );
+    app.patch("/api/books/singleBook/:bookName", async (req, res) => {
+      const bookName = req.params.bookName;
+      const filter = { name: bookName };
+      const setQuantity = {
+        $set: req.body,
+      };
+      const result = await booksCollection.updateOne(filter, setQuantity);
+      res.send(result);
+    });
 
     // Borrowed Books Related API
 
@@ -226,7 +220,6 @@ async function run() {
 
     app.post("/api/borrowedBooks", async (req, res) => {
       const newBorrowedBooks = req.body;
-      console.log(newBorrowedBooks);
       const result = await borrowedBooksCollection.insertOne(newBorrowedBooks);
       res.send(result);
     });
