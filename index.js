@@ -62,6 +62,9 @@ async function run() {
       .collection("categories");
     const usersCollection = client.db("quickReadsDB").collection("users");
     const booksCollection = client.db("quickReadsDB").collection("books");
+    const borrowedBooksCollection = client
+      .db("quickReadsDB")
+      .collection("borrowedBooks");
 
     // JWT Related API
 
@@ -96,7 +99,6 @@ async function run() {
 
     app.get("/api/categories/:category", async (req, res) => {
       const category = req.params.category;
-      console.log(category);
       const query = {
         category: category,
       };
@@ -162,6 +164,20 @@ async function run() {
         },
       };
       const result = await booksCollection.updateOne(filter, newBook, options);
+      res.send(result);
+    });
+
+    // Borrowed Books Related API
+
+    app.get("/api/borrowedBooks", async (req, res) => {
+      const result = await borrowedBooksCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/api/borrowedBooks", async (req, res) => {
+      const newBorrowedBooks = req.body;
+      console.log(newBorrowedBooks);
+      const result = await borrowedBooksCollection.insertOne(newBorrowedBooks);
       res.send(result);
     });
 
