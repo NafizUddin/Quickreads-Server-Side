@@ -12,10 +12,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://quickreads-library-a11.netlify.app",
-    ], // Client Side Server
+    origin: ["https://quickreads-library-a11.netlify.app"], // Client Side Server
     credentials: true,
   })
 );
@@ -79,8 +76,8 @@ async function run() {
       res
         .cookie("token", token, {
           httpOnly: true,
-          secure: true,
-          sameSite: "none",
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
         })
         .send({ success: true });
     });
@@ -222,6 +219,7 @@ async function run() {
 
     app.get("/api/borrowedBooks", verifyToken, async (req, res) => {
       const queryEmail = req.query?.email;
+      console.log(queryEmail);
 
       const tokenEmail = req.user.email;
 
@@ -231,12 +229,9 @@ async function run() {
           .send({ status: 403, message: "forbidden access" });
       }
 
-      let query = {};
-      if (queryEmail) {
-        query = { email: queryEmail };
-      }
+      const query = { userEmail: queryEmail };
 
-      const result = await borrowedBooksCollection.find().toArray();
+      const result = await borrowedBooksCollection.find(query).toArray();
       res.send(result);
     });
 
