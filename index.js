@@ -127,7 +127,12 @@ async function run() {
     // Books Related API
 
     app.get("/api/books", async (req, res) => {
-      const result = await booksCollection.find().toArray();
+      const queries = {};
+      if (req.query.quantity !== "null") {
+        queries.quantity = { $gt: parseInt(req.query.quantity) };
+      }
+
+      const result = await booksCollection.find(queries).toArray();
       res.send(result);
     });
 
@@ -139,6 +144,21 @@ async function run() {
       const result = await booksCollection.find(query).toArray();
       res.send(result);
     });
+
+    app.get("/api/books/bookName/:name", async (req, res) => {
+      const queryName = req.params?.name;
+      const query = {
+        name: queryName,
+      };
+      const result = await booksCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // app.get("/api/books/query/quantity", async (req, res) => {
+    //   const query = {};
+    //   const result = await booksCollection.find().toArray();
+    //   res.send(result);
+    // });
 
     app.get("/api/books/singleBook/:id([0-9a-fA-F]{24})", async (req, res) => {
       const id = req.params.id;
@@ -185,15 +205,15 @@ async function run() {
 
     // Borrowed Books Related API
 
-    app.get("/api/borrowedBooks", verifyToken, async (req, res) => {
+    app.get("/api/borrowedBooks", async (req, res) => {
       const queryEmail = req.query?.email;
-      const tokenEmail = req.user.email;
+      // const tokenEmail = req.user.email;
 
-      if (queryEmail !== tokenEmail) {
-        return res
-          .status(403)
-          .send({ status: 403, message: "forbidden access" });
-      }
+      // if (queryEmail !== tokenEmail) {
+      //   return res
+      //     .status(403)
+      //     .send({ status: 403, message: "forbidden access" });
+      // }
 
       let query = {};
       if (queryEmail) {
@@ -214,7 +234,7 @@ async function run() {
     app.delete("/api/borrowedBooks/:id([0-9a-fA-F]{24})", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-      const result = await cartCollection.deleteOne(query);
+      const result = await borrowedBooksCollection.deleteOne(query);
       res.send(result);
     });
 
