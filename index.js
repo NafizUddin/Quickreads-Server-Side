@@ -12,7 +12,10 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://quickreads-library.netlify.app"], // Client Side Server
+    origin: [
+      "http://localhost:5173",
+      "https://quickreads-library-a11.netlify.app",
+    ], // Client Side Server
     credentials: true,
   })
 );
@@ -126,7 +129,7 @@ async function run() {
 
     // Books Related API
 
-    app.get("/api/books", verifyToken, async (req, res) => {
+    app.get("/api/books", async (req, res) => {
       const queries = {};
       if (req.query.quantity !== "null") {
         queries.quantity = { $gt: parseInt(req.query.quantity) };
@@ -168,6 +171,17 @@ async function run() {
     });
 
     app.post("/api/books", verifyToken, async (req, res) => {
+      const queryEmail = req.query?.email;
+
+      const tokenEmail = req.user.email;
+      console.log(queryEmail, tokenEmail);
+
+      if (queryEmail !== tokenEmail) {
+        return res
+          .status(403)
+          .send({ status: 403, message: "forbidden access" });
+      }
+
       const newBooks = req.body;
       const result = await booksCollection.insertOne(newBooks);
       res.send(result);
@@ -180,7 +194,14 @@ async function run() {
       const options = { upsert: true };
       const newBook = {
         $set: {
-          ...updatedBook,
+          name: updatedBook.name,
+          author: updatedBook.author,
+          description: updatedBook.description,
+          quantity: parseInt(updatedBook.quantity),
+          bookCategory: updatedBook.bookCategory,
+          photo: updatedBook.photo,
+          preview: updatedBook.preview,
+          rating: updatedBook.rating,
         },
       };
       const result = await booksCollection.updateOne(filter, newBook, options);
@@ -199,15 +220,16 @@ async function run() {
 
     // Borrowed Books Related API
 
-    app.get("/api/borrowedBooks", async (req, res) => {
+    app.get("/api/borrowedBooks", verifyToken, async (req, res) => {
       const queryEmail = req.query?.email;
-      // const tokenEmail = req.user.email;
 
-      // if (queryEmail !== tokenEmail) {
-      //   return res
-      //     .status(403)
-      //     .send({ status: 403, message: "forbidden access" });
-      // }
+      const tokenEmail = req.user.email;
+
+      if (queryEmail !== tokenEmail) {
+        return res
+          .status(403)
+          .send({ status: 403, message: "forbidden access" });
+      }
 
       let query = {};
       if (queryEmail) {
