@@ -185,7 +185,21 @@ async function run() {
 
     // Borrowed Books Related API
 
-    app.get("/api/borrowedBooks", async (req, res) => {
+    app.get("/api/borrowedBooks", verifyToken, async (req, res) => {
+      const queryEmail = req.query?.email;
+      const tokenEmail = req.user.email;
+
+      if (queryEmail !== tokenEmail) {
+        return res
+          .status(403)
+          .send({ status: 403, message: "forbidden access" });
+      }
+
+      let query = {};
+      if (queryEmail) {
+        query = { email: queryEmail };
+      }
+
       const result = await borrowedBooksCollection.find().toArray();
       res.send(result);
     });
