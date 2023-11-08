@@ -153,7 +153,7 @@ async function run() {
       res.send(result);
     });
 
-    app.put("/api/books/:id([0-9a-fA-F]{24})", async (req, res) => {
+    app.put("/api/books/singleBook/:id([0-9a-fA-F]{24})", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updatedBook = req.body;
@@ -167,6 +167,22 @@ async function run() {
       res.send(result);
     });
 
+    app.patch(
+      "/api/books/singleBook/:id([0-9a-fA-F]{24})",
+      async (req, res) => {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const updatedBook = req.body;
+        const newBook = {
+          $set: {
+            ...updatedBook,
+          },
+        };
+        const result = await booksCollection.updateOne(filter, newBook);
+        res.send(result);
+      }
+    );
+
     // Borrowed Books Related API
 
     app.get("/api/borrowedBooks", async (req, res) => {
@@ -178,6 +194,13 @@ async function run() {
       const newBorrowedBooks = req.body;
       console.log(newBorrowedBooks);
       const result = await borrowedBooksCollection.insertOne(newBorrowedBooks);
+      res.send(result);
+    });
+
+    app.delete("/api/borrowedBooks/:id([0-9a-fA-F]{24})", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await cartCollection.deleteOne(query);
       res.send(result);
     });
 
