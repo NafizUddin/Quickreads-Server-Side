@@ -12,7 +12,10 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["https://quickreads-library-a11.netlify.app"], // Client Side Server
+    origin: [
+      "https://quickreads-library-a11-react.netlify.app",
+      "https://quickreads-library-a11.netlify.app",
+    ], // Client Side Server
     credentials: true,
   })
 );
