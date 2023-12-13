@@ -13,9 +13,9 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: [
-      "http://localhost:5173",
       "https://quickreads-library-a11-react.netlify.app",
       "https://quickreads-library-a11.netlify.app",
+      "http://localhost:5173",
     ], // Client Side Server
     credentials: true,
   })
