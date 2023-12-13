@@ -13,6 +13,7 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: [
+      "http://localhost:5173",
       "https://quickreads-library-a11-react.netlify.app",
       "https://quickreads-library-a11.netlify.app",
     ], // Client Side Server
@@ -119,6 +120,32 @@ async function run() {
     app.get("/api/users", async (req, res) => {
       const result = await usersCollection.find().toArray();
       res.send(result);
+    });
+
+    // Get single user through email
+    app.get("/api/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await usersCollection.findOne(query);
+      res.send(result);
+    });
+
+    // Check if the user is librarian or not
+    app.get("/api/users/librarian/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      const tokenEmail = req.user.email;
+
+      if (email !== tokenEmail) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      let librarian = false;
+      if (user) {
+        librarian = user?.role === "librarian";
+      }
+      res.send({ librarian });
     });
 
     app.post("/api/users", async (req, res) => {
